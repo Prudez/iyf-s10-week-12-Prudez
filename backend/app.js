@@ -1,30 +1,46 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const config = require('./config/index');
 
 const app = express();
-const requiredVars = ['MONGODB_URI', 'JWT_SECRET'];
 
-for (const varName of requiredVars) {
-    if (!process.env[varName]) {
-        console.error(`Error: ${varName} environment variable is required`);
-        process.exit(1);
-    }
-}
+// =====================
+// CONNECT TO DATABASE
+// =====================
+mongoose.connect(config.mongoUri)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch((err) => console.error('MongoDB connection error:', err));
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+// =====================
+// MIDDLEWARE
+// =====================
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            config.frontendUrl
+        ].filter(Boolean);
 
-app.use(express.json());
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
 
-// test route
-app.get('/', (req, res) => {
-  res.json({ message: 'API is running' });
-});
+app.use(cors(corsOptions));
+app.use(express.json()); // lets Express read JSON from requests
 
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// =====================
+// ROUTES
+// =====================
+app.use('/api/health', require('./routes/health'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/posts', require('./routes/posts'));
+
+module.exports = app; // export app, don't start server here

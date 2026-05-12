@@ -1,24 +1,24 @@
-const express = require('express');
-const path = require('path');
-
-const app = express();
-
-// =====================
-// API ROUTES (FIRST)
-// =====================
-app.use('/api/health', require('./routes/health'));
-
-// (other API routes should also go here)
-// app.use('/api/auth', require('./routes/auth'));
+require('dotenv').config(); // 👈 must be first!
+const app = require('./app');
+const config = require('./config/index');
 
 // =====================
-// SERVE FRONTEND (PRODUCTION)
+// VALIDATE ENVIRONMENT VARIABLES
 // =====================
-app.use(express.static(path.join(__dirname, '../my-app/dist')));
+const requiredVars = ['MONGODB_URI', 'JWT_SECRET'];
+
+for (const varName of requiredVars) {
+    if (!process.env[varName]) {
+        console.error(`Error: ${varName} environment variable is required`);
+        process.exit(1);
+    }
+}
 
 // =====================
-// REACT ROUTING (LAST)
+// START SERVER
 // =====================
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../my-app/dist/index.html'));
+const PORT = config.port || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
