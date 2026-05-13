@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -19,6 +20,9 @@ const corsOptions = {
     origin: function (origin, callback) {
         const allowedOrigins = [
             'http://localhost:5173',
+            'http://localhost:5174',
+            'https://iyf-s10-week-12-prudez.vercel.app',
+            'https://iyf-s10-week-12-prudez-git-main.vercel.app',
             config.frontendUrl
         ].filter(Boolean);
 
@@ -34,7 +38,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json()); // lets Express read JSON from requests
+app.use(express.json());
 
 // =====================
 // ROUTES
@@ -43,4 +47,4 @@ app.use('/api/health', require('./routes/health'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/posts', require('./routes/posts'));
 
-module.exports = app; // export app, don't start server here
+module.exports = app;
