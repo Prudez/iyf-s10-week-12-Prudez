@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/index');
 
-module.exports = async (req, res, next) => {
+const auth = (req, res, next) => {
     try {
         // Get token from request header
         const token = req.headers.authorization?.split(' ')[1];
@@ -12,10 +12,12 @@ module.exports = async (req, res, next) => {
 
         // Verify the token is valid
         const decoded = jwt.verify(token, config.jwtSecret);
-        req.user = decoded; // attach user info to request
+        req.user = decoded;
         next();
 
     } catch (error) {
         res.status(401).json({ error: 'Token is not valid' });
     }
 };
+
+module.exports = auth;
